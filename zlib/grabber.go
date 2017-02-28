@@ -515,7 +515,7 @@ func makeGrabber(config *Config) func(*Conn) error {
 
 		if config.Heartbleed {
 			buf := make([]byte, 256)
-			if _, err := c.CheckHeartbleed(buf); err != nil {
+			if _, err := c.CheckHeartbleed(buf, config.FuzzedHeartbeatData); err != nil {
 				c.erroredComponent = "heartbleed"
 				return err
 			}

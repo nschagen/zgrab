@@ -46,7 +46,7 @@ func (m *heartbleedMessage) marshal() []byte {
 	return x
 }
 
-func (c *Conn) CheckHeartbleed(b []byte) (n int, err error) {
+func (c *Conn) CheckHeartbleed(b []byte, hbdata []byte) (n int, err error) {
 	if err = c.Handshake(); err != nil {
 		return
 	}
@@ -56,11 +56,16 @@ func (c *Conn) CheckHeartbleed(b []byte) (n int, err error) {
 	c.in.Lock()
 	defer c.in.Unlock()
 
-	hb := heartbleedMessage{}
-	hb.marshal()
-
-	if _, err = c.writeRecord(recordTypeHeartbeat, hb.raw); err != nil {
-		return 0, err
+	if hbdata == nil {
+		hb := heartbleedMessage{}
+		hb.marshal()
+		if _, err = c.writeRecord(recordTypeHeartbeat, hb.raw); err != nil {
+			return 0, err
+		}
+	} else {
+		if _, err = c.writeRecord(recordTypeHeartbeat, hbdata); err != nil {
+			return 0, err
+		}
 	}
 
 	if err = c.readRecord(recordTypeHeartbeat); err != nil {

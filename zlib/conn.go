@@ -469,13 +469,13 @@ func (c *Conn) IMAPBanner(b []byte) (int, error) {
 	return n, err
 }
 
-func (c *Conn) CheckHeartbleed(b []byte) (int, error) {
+func (c *Conn) CheckHeartbleed(b []byte, hbdata []byte) (int, error) {
 	if !c.isTls {
 		return 0, fmt.Errorf(
 			"Must perform TLS handshake before sending Heartbleed probe to %s",
 			c.RemoteAddr().String())
 	}
-	n, err := c.tlsConn.CheckHeartbleed(b)
+	n, err := c.tlsConn.CheckHeartbleed(b, hbdata)
 	hb := c.tlsConn.GetHeartbleedLog()
 	if err == ztls.HeartbleedError {
 		err = nil

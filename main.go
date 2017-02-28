@@ -38,6 +38,7 @@ var (
 	outputFileName, inputFileName string
 	logFileName, metadataFileName string
 	messageFileName               string
+	fuzzedHeartbeatFileName       string
 	interfaceName                 string
 	ehlo                          string
 	portFlag                      uint
@@ -109,6 +110,7 @@ func init() {
 	flag.BoolVar(&config.SafariNoDHE, "safari-no-dhe-ciphers", false, "Send Safari ciphers minus DHE suites")
 
 	flag.BoolVar(&config.Heartbleed, "heartbleed", false, "Check if server is vulnerable to Heartbleed (implies --tls)")
+	flag.StringVar(&fuzzedHeartbeatFileName, "hbdata", "", "Heartbleed message provided by fuzzer")
 
 	flag.BoolVar(&config.GatherSessionTicket, "tls-session-ticket", false, "Send support for TLS Session Tickets and output ticket if presented")
 	flag.BoolVar(&config.ExtendedMasterSecret, "tls-extended-master-secret", false, "Offer RFC 7627 Extended Master Secret extension")
@@ -319,6 +321,22 @@ func init() {
 				zlog.Fatal(err)
 			}
 			messageFile.Close()
+		}
+	}
+
+	// Open message file, if applicable
+	if fuzzedHeartbeatFileName != "" {
+		if hbFile, err := os.Open(fuzzedHeartbeatFileName); err != nil {
+			zlog.Fatal(err)
+		} else {
+			buf := make([]byte, 8192)
+			n, err := hbFile.Read(buf)
+			//config.SendData = true
+			config.FuzzedHeartbeatData = buf[0:n]
+			if err != nil && err != io.EOF {
+				zlog.Fatal(err)
+			}
+			hbFile.Close()
 		}
 	}
 

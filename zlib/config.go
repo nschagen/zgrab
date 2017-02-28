@@ -109,6 +109,7 @@ type Config struct {
 	TLS                  bool
 	TLSVersion           uint16
 	Heartbleed           bool
+	FuzzedHeartbeatData  []byte
 	RootCAPool           *x509.CertPool
 	DHEOnly              bool
 	ECDHEOnly            bool
